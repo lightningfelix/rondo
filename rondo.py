@@ -1,4 +1,5 @@
-import sys, argparse
+import sys, argparse, sqlite3
+import pandas as pd
 
 def main():
     print("Begin!")
@@ -14,6 +15,9 @@ def main():
     print(f"{args.filename} {args.sql} : {args.export}")
 
     # Load csv as a database table with the header row as field names
+    connection = sqlite3.connect(':memory:')
+    infile = pd.read_csv(args.filename)
+    infile.to_sql('infile', connection, if_exists='replace', index=False)
 
     # Run transformations specified in a file
 
