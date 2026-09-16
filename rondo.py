@@ -8,6 +8,13 @@ def create_database(conn: sqlite3.Connection, files: list[str]) -> sqlite3.Curso
         infile.to_sql(Path(file).stem, conn, if_exists='replace', index=False)
     return conn.cursor()
 
+def export(conn: sqlite3.Connection, export_args: list[str]) -> None:
+    for line in export_args:
+        export_file, export_query = line.split(';', 1) if ';' in line else (line, '')
+        data = pd.read_sql_query(export_query, conn)
+        data.to_csv(export_file)
+    return None
+
 def main():
     print("Begin!")
 
@@ -27,15 +34,12 @@ def main():
     # Run transformations specified in a file
     with open(args.sql, 'r') as sqlfile:
         for line in sqlfile:
+            print(line)
             cursor.execute(line)
             connection.commit()
 
     # Process 1+ Export file
-    for exports in args.export:
-        export_args = exports.split(';', 1)
-        query = export_args[1] if len(export_args) > 1 else f"SELECT * FROM {Path(args.filename[0]).stem}"
-        data = pd.read_sql_query(query, connection)
-        data.to_csv(export_args[0], index=False)
+    export(connection, args.export)
 
     # Close database and exit
     connection.close()
