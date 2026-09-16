@@ -10,7 +10,7 @@ def create_database(conn: sqlite3.Connection, files: list[str]) -> sqlite3.Curso
 
 def export(conn: sqlite3.Connection, export_args: list[str]) -> None:
     for line in export_args:
-        export_file, export_query = line.split(';', 1) if ';' in line else (line, '')
+        export_file, export_query = line.split(';', 1) if ';' in line else (f"{line}.csv", f"SELECT * FROM {line}")
         data = pd.read_sql_query(export_query, conn)
         data.to_csv(export_file)
     return None
